@@ -15,7 +15,5 @@ post '/signin' do
 end
 
 get '/monstas/:name' do
-  # 'Hello ' + params['name'] + '!'
-  # params.inspect
-  erb "<h1>Hello <%= name %></h1>", { :locals => params }
+  erb :monstas, { :locals => params }
 end
