@@ -21,6 +21,32 @@ get '/monstas/:name' do
   erb :monstas
 end
 
+class NameValidator
+  def initialize(name, names)
+    @name = name.to_s
+    @names = names
+  end
+  
+  def valid?
+    validate
+    @message.nil?
+  end
+
+  def message
+    @message
+  end
+
+  private
+
+  def validate
+    if @name.empty?
+      @message = "A name must be present."
+    elsif @names.include?(@name)
+      @message = "#{@name} is already on the list."
+    end
+  end
+end
+
 get '/monstas' do
   @message = session.delete(:message)
   @name = params['name']
@@ -30,9 +56,17 @@ end
 
 post '/monstas' do
   @name = params['name']
-  write_name_to_file("names.txt", @name)
-  session[:message] = "Succesfully saved the name #{@name}."
-  redirect "/monstas?name=#{@name}"
+  @names = read_names
+  validator = NameValidator.new(@name, @names)
+
+  if validator.valid?
+    write_name_to_file("names.txt", @name)
+    session[:message] = "Succesfully saved the name #{@name}."
+    redirect "/monstas?name=#{@name}"
+  else
+    @message = validator.message
+    erb :monstas
+  end
 end
 
 def write_name_to_file(filename, arg)
